@@ -1,0 +1,23 @@
+# Golang
+/bin/
+/build/
+/*.exe
+*.test
+*.out
+
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Docker
+*.log
+.DS_Store

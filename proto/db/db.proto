@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package db;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "todo/proto;dbpb";
+
+service TaskService {
+    rpc CreateTask (TaskRequest) returns (TaskResponse);
+    rpc GetTask (TaskId) returns (TaskItemResponse);
+    rpc EditTask (EditTaskRequest) returns (TaskResponse);
+    rpc DeleteTask (TaskId) returns (TaskResponse);
+    rpc CompleteTask (TaskId) returns (TaskResponse);
+    rpc ListTasks (Empty) returns (TasksResponse);
+    rpc ListCompletedTasks (Empty) returns (TasksResponse);
+    rpc ListNotCompletedTasks (Empty) returns (TasksResponse);
+}
+
+message Empty {}
+
+message TaskId {
+    int64 id = 1;
+}
+
+message TaskItem {
+    int64 id = 1;
+    string title = 2;
+    string description = 3;
+    bool completed = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp completed_at = 6;
+}
+
+message TaskRequest {
+    string title = 1;
+    string description = 2;
+    bool completed = 3;
+}
+
+message EditTaskRequest {
+    int64 id = 1;
+    string title = 2;
+    string description = 3;
+}
+
+message TaskResponse {
+    string status = 1;
+    string message = 2;
+}
+
+message TaskItemResponse {
+    TaskItem task = 1;
+}
+
+message TasksResponse {
+    repeated TaskItem tasks = 1;
+}

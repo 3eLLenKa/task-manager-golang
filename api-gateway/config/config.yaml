@@ -1,0 +1,18 @@
+env: "local"
+
+server:
+  http:
+    host: "0.0.0.0:8080"
+    read_timeout: 5s       # время ожидания запроса от клиента
+    write_timeout: 10s     # время на ответ
+    idle_timeout: 60s      # максимум keep-alive
+    shutdown_timeout: 5s  # graceful shutdown
+
+grpc:
+  db_service:
+    address: "db-service:44044"
+    timeout: 3s           # таймаут для каждого gRPC-запроса
+    retry:
+      attempts: 3         # количество повторов при ошибках
+      backoff: 500ms      # задержка между повторами
+      max_backoff: 2s

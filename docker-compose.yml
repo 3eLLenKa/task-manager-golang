@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  api-service:
+    build: ./api-gateway
+    container_name: api
+    ports:
+      - "8080:8080"
+    environment:
+      CONFIG_PATH: /app/api-gateway/config/config.yaml
+    depends_on:
+      - db-service
+
+  db-service:
+    build: ./db-service
+    container_name: db-service
+    ports:
+      - "44044:44044"
+    environment:
+      CONFIG_PATH: /app/db-service/config/config.yaml
+    depends_on:
+      - postgres
+
+  redis:
+    image: redis:latest
+    container_name: todo_cache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: todo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo_user -d todo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate
+    container_name: migrate
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@postgres:5432/task_manager?sslmode=disable",
+      "up"
+    ]
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
