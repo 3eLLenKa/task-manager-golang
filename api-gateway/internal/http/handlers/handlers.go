@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 	"todo/api/internal/domain/models"
+	producer "todo/api/internal/kafka"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,12 +24,14 @@ type Todo interface {
 }
 
 type Handlers struct {
-	todo Todo
+	producer *producer.Producer
+	todo     Todo
 }
 
-func New(todo Todo) *Handlers {
+func New(todo Todo, producer *producer.Producer) *Handlers {
 	return &Handlers{
-		todo: todo,
+		todo:     todo,
+		producer: producer,
 	}
 }
 
@@ -46,6 +51,11 @@ func (h *Handlers) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=create_task name=%s",
+			time.Now().Format(time.RFC3339), req.Name),
+	)
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -64,6 +74,11 @@ func (h *Handlers) GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=get_task id=%d",
+			time.Now().Format(time.RFC3339), id),
+	)
 
 	_ = json.NewEncoder(w).Encode(task)
 }
@@ -92,6 +107,11 @@ func (h *Handlers) EditTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=edit_task id=%d name=%s",
+			time.Now().Format(time.RFC3339), id, req.Name),
+	)
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -108,6 +128,11 @@ func (h *Handlers) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=delete_task id=%d",
+			time.Now().Format(time.RFC3339), id),
+	)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -126,6 +151,11 @@ func (h *Handlers) CompleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=complete_task id=%d",
+			time.Now().Format(time.RFC3339), id),
+	)
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -136,6 +166,11 @@ func (h *Handlers) ListTasksHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=list_tasks count=%d",
+			time.Now().Format(time.RFC3339), len(tasks)),
+	)
 
 	_ = json.NewEncoder(w).Encode(tasks)
 }
@@ -148,6 +183,11 @@ func (h *Handlers) ListCompletedTasksHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=list_completed_tasks count=%d",
+			time.Now().Format(time.RFC3339), len(tasks)),
+	)
+
 	_ = json.NewEncoder(w).Encode(tasks)
 }
 
@@ -158,6 +198,11 @@ func (h *Handlers) ListNotCompletedTasksHandler(w http.ResponseWriter, r *http.R
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	_ = h.producer.Publish(
+		fmt.Sprintf("time=%s action=list_not_completed_tasks count=%d",
+			time.Now().Format(time.RFC3339), len(tasks)),
+	)
 
 	_ = json.NewEncoder(w).Encode(tasks)
 }
