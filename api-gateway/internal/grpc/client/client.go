@@ -70,7 +70,7 @@ func (c *Client) GetTask(id int64) (models.Task, error) {
 		Name:        model.Title,
 		Description: model.Description,
 		Completed:   model.Completed,
-		CreatedAt:   model.CompletedAt.AsTime(),
+		CreatedAt:   model.CreatedAt.AsTime(),
 		CompletedAt: completedAt,
 	}, nil
 }

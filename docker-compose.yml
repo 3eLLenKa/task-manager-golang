@@ -10,6 +10,8 @@ services:
       CONFIG_PATH: /app/api-gateway/config/config.yaml
     depends_on:
       - db-service
+      - kafka
+      - redis
 
   db-service:
     build: ./db-service
@@ -20,6 +22,7 @@ services:
       CONFIG_PATH: /app/db-service/config/config.yaml
     depends_on:
       - postgres
+      - redis
 
   redis:
     image: bitnami/redis:latest
@@ -33,6 +36,7 @@ services:
   postgres:
     image: bitnami/postgresql:15
     container_name: postgres
+    restart: always
     environment:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres
@@ -64,6 +68,7 @@ services:
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
+    restart: always
     ports:
       - "9092:9092"
     environment:
